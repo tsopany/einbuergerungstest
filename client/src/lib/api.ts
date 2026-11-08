@@ -1,3 +1,4 @@
+import {demoApi, isDemo} from '@/lib/demo';
 import i18n from '@/lib/i18n';
 
 const API_BASE_URL = (): string => import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
@@ -24,6 +25,7 @@ const headersFor = ({body, token}: Options): Record<string, string> => ({
 });
 
 export async function api<T>(path: string, options: Options = {}): Promise<T> {
+	if (isDemo()) return demoApi<T>(path, options);
 	const response = await fetch(apiUrl(path), {
 		method: options.method ?? 'GET',
 		credentials: 'include',

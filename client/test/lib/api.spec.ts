@@ -12,6 +12,16 @@ describe('api', () => {
 		vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8115');
 	});
 
+	it('answers from memory without fetching in the demo', async () => {
+		const fetchMock = respond(200, {});
+		vi.stubGlobal('fetch', fetchMock);
+		vi.stubEnv('VITE_DEMO', 'true');
+		expect(await api('/api/me')).toMatchObject({id: 'demo'});
+		expect(fetchMock).not.toHaveBeenCalled();
+		vi.unstubAllEnvs();
+		vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8115');
+	});
+
 	it('sends credentials, the request header and the bearer token', async () => {
 		const fetchMock = respond(200, {status: 'ok'});
 		vi.stubGlobal('fetch', fetchMock);

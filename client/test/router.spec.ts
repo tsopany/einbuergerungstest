@@ -11,6 +11,7 @@ describe('router', () => {
 		['/p/frage', 'question'],
 		['/p/frage/NW-3', 'question'],
 		['/p/pruefung', 'exam'],
+		['/p/pruefung/7', 'exam-report'],
 		['/p/einstellungen', 'settings'],
 		['/p/legal', 'legal'],
 		['/anything/else', 'not-found']
@@ -20,7 +21,7 @@ describe('router', () => {
 
 	it('keeps the catch-all last and the trainer pages protected', () => {
 		expect(routes.at(-1)?.name).toBe('not-found');
-		expect(routes.filter((route) => route.meta?.auth).map((route) => route.name)).toEqual(['home', 'question', 'exam', 'settings']);
+		expect(routes.filter((route) => route.meta?.auth).map((route) => route.name)).toEqual(['home', 'question', 'exam', 'exam-report', 'settings']);
 		expect(router.resolve('/p/frage/NW-3').params).toEqual({id: 'NW-3'});
 	});
 

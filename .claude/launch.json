@@ -21,6 +21,23 @@
 			"port": 3051
 		},
 		{
+			"name": "demo",
+			"runtimeExecutable": "pnpm",
+			"runtimeArgs": [
+				"--dir",
+				"client",
+				"exec",
+				"env",
+				"VITE_DEMO=true",
+				"VITE_API_BASE_URL=http://localhost:8115",
+				"vite",
+				"serve",
+				"--port",
+				"3051"
+			],
+			"port": 3051
+		},
+		{
 			"name": "api",
 			"runtimeExecutable": "pnpm",
 			"runtimeArgs": [

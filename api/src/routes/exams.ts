@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { getEm } from "@/db/orm";
 import { authenticate } from "@/middleware/authenticate";
-import { finishExam, listExams, startExam } from "@/services/exams";
+import { examReport, finishExam, listExams, startExam } from "@/services/exams";
 import { isQuestionId } from "#shared/question";
 
 const questionId = z.string().refine(isQuestionId, "Unknown question id");
@@ -14,6 +14,10 @@ const submission = z.object({
 
 export default async function examRoutes(app: FastifyInstance) {
 	app.get("/exams", { preHandler: authenticate }, async (request) => listExams(getEm(), request.user.id));
+
+	app.get("/exams/:id", { preHandler: authenticate }, async (request) =>
+		examReport(getEm(), request.user.id, params.parse(request.params).id),
+	);
 
 	app.post("/exams", { preHandler: authenticate }, async (request, reply) =>
 		reply.status(201).send(await startExam(getEm(), request.user.id)),

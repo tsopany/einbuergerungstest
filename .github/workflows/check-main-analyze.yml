@@ -143,6 +143,8 @@ jobs:
 
     sonarqube:
         name: SonarQube Analysis
+        # Skipped unless the repository variable SONAR_ENABLED is 'true' (Settings > Secrets and variables > Actions > Variables)
+        if: ${{ vars.SONAR_ENABLED == 'true' }}
         runs-on: ubuntu-latest
         environment: production
         needs: [ test-client, test-api, test-real-api ]

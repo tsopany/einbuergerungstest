@@ -2,6 +2,7 @@ import {createRouter, createWebHistory, type RouteLocationNormalized, type Route
 
 import {useAuthStore} from '@/stores/auth';
 import Exam from './views/Exam.vue';
+import ExamReport from './views/ExamReport.vue';
 import Home from './views/Home.vue';
 import Legal from './views/Legal.vue';
 import Login from './views/Login.vue';
@@ -14,6 +15,7 @@ export const routes: RouteRecordRaw[] = [
 	{path: '/p/login', name: 'login', component: Login},
 	{path: '/p/frage/:id?', name: 'question', component: Question, props: true, meta: {auth: true}},
 	{path: '/p/pruefung', name: 'exam', component: Exam, meta: {auth: true}},
+	{path: '/p/pruefung/:id', name: 'exam-report', component: ExamReport, props: true, meta: {auth: true}},
 	{path: '/p/einstellungen', name: 'settings', component: Settings, meta: {auth: true}},
 	{path: '/p/legal', name: 'legal', component: Legal},
 	{path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound}

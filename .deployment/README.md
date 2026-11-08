@@ -13,7 +13,7 @@ A push to `main` is a deploy:
 
 - `check-main-client.yml` builds the SPA and copies it to `/var/deploy/einbuergerungstest/client`.
 - `check-main-server.yml` runs the API specs on Postgres, builds and pushes `ghcr.io/tsopany/einbuergerungstest-api:latest`, then pulls it on the VM and restarts `einbuergerungstest-api`.
-- `check-main-analyze.yml` runs the tests with coverage and the SonarQube scan.
+- `check-main-analyze.yml` runs the tests with coverage and, when the repository variable `SONAR_ENABLED` is `true`, the SonarQube scan.
 - Branches other than `main` only run `check-dev-client.yml` / `check-dev-server.yml` (`pnpm check`, and the specs on a real Postgres).
 
 GitHub environment `production` needs the secrets `SSH_PRIVATE_KEY`, `GHCR_PAT`, `SONAR_TOKEN`, `SONAR_HOST_URL` and the variables `SSH_HOST`, `SSH_USERNAME`,

@@ -143,6 +143,19 @@ a:focus-visible {
 .main.wide {
 	max-width: 880px;
 }
+.title-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 4px 20px;
+}
+.row .submit {
+	margin-left: auto;
+}
+.actions .exam {
+	margin-left: auto;
+}
 .row {
 	display: flex;
 	flex-wrap: wrap;
@@ -192,6 +205,18 @@ a:focus-visible {
 	gap: 12px;
 	padding: 6px 0;
 	border-bottom: 1px solid var(--line);
+}
+.report-item {
+	align-items: flex-start;
+}
+.report-item .status {
+	flex: none;
+}
+.report-item.right .status {
+	color: var(--acc);
+}
+.report-item.wrong .status {
+	color: var(--err);
 }
 .question-text {
 	font-size: 18px;

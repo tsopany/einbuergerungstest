@@ -49,7 +49,7 @@ In `tsopany/tsopany-vm-setup`, Settings > Secrets and variables > Actions > Vari
 - [ ] `INFISICAL_PROJECT_ID_EINBUERGERUNGSTEST` = the project id from step 3.
 - [ ] `VM_DEPLOY_ENABLED` = `true` if it is not set already (it is a repository variable).
 
-Optional: SonarQube project `tsopany_einbuergerungstest_app` on `https://sonar.tsopany.com`; branch protection on `main`.
+Optional: SonarQube project `tsopany_einbuergerungstest_app` on `https://sonar.tsopany.com`, then set the repository variable `SONAR_ENABLED` = `true` (the scan job is skipped without it); branch protection on `main`.
 
 ## 7. First deploy (order matters)
 

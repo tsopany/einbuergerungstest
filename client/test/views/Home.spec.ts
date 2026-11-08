@@ -67,7 +67,7 @@ describe('Home', () => {
 			],
 			'GET /api/seed': {seed: 1},
 			'GET /api/exams': [
-				{id: 2, startedAt: 1, finishedAt: Date.now(), score: 20, passed: true},
+				{id: 2, startedAt: Date.now() - 754_000, finishedAt: Date.now(), score: 20, passed: true},
 				{id: 1, startedAt: 1, finishedAt: Date.now() - day, score: 9, passed: false}
 			]
 		});
@@ -82,6 +82,10 @@ describe('Home', () => {
 		expect(weakest.at(-1)?.text()).toContain('3 ·');
 		expect(weakest.at(-1)?.text()).toContain('4/4');
 		expect(wrapper.findAll('.history li').map((row) => row.text())).toEqual([expect.stringContaining('20/33 · bestanden'), expect.stringContaining('9/33 · nicht bestanden')]);
+		expect(wrapper.findAll('.history li')[0].text()).toContain('Dauer 12:34 Min.');
+		const links = wrapper.findAllComponents(RouterLinkStub).filter((link) => link.classes('report'));
+		expect(links.map((link) => link.props('to'))).toEqual(['/p/pruefung/2', '/p/pruefung/1']);
+		expect(links[0].text()).toBe('Auswertung');
 	});
 
 	it('shortens long question texts in the weakest list and leaves short ones whole', async () => {

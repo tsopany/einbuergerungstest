@@ -43,6 +43,14 @@ describe('AppHeader', () => {
 		expect(router.currentRoute.value.fullPath).toBe('/p/login');
 	});
 
+	it('says so in the demo', () => {
+		vi.stubEnv('VITE_DEMO', 'true');
+		const {wrapper} = mountHeader();
+		expect(wrapper.text()).toContain('Demo: nichts wird gespeichert');
+		vi.unstubAllEnvs();
+		vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8115');
+	});
+
 	it('toggles the theme with the last control in the bar', async () => {
 		theme.value = 'light';
 		const {wrapper} = mountHeader();

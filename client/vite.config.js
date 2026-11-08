@@ -46,6 +46,7 @@ export default defineConfig({
 			}
 		}
 	},
+	server: {watch: {ignored: ['**/coverage/**']}},
 	plugins: [vue(), versionJsonPlugin()],
 	resolve: {
 		alias: [

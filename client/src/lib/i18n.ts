@@ -1,7 +1,7 @@
 import {createI18n} from 'vue-i18n';
 
 const de = {
-	app: {name: 'Einbürgerungstest', requestFailed: 'Anfrage fehlgeschlagen'},
+	app: {name: 'Einbürgerungstest', requestFailed: 'Anfrage fehlgeschlagen', demo: 'Demo: nichts wird gespeichert'},
 	nav: {label: 'Navigation', legal: 'Rechtliches', settings: 'Einstellungen', signIn: 'Anmelden', signOut: 'Abmelden', theme: 'Design wechseln'},
 	loading: 'Lädt …',
 	retry: 'Erneut versuchen',
@@ -28,6 +28,8 @@ const de = {
 		practiceWeak: 'Meine Fehler üben',
 		exam: 'Probeprüfung',
 		history: 'Bisherige Probeprüfungen',
+		duration: 'Dauer {time} Min.',
+		report: 'Auswertung',
 		noHistory: 'Noch keine Probeprüfung.',
 		passed: 'bestanden',
 		failed: 'nicht bestanden'
@@ -43,15 +45,16 @@ const de = {
 	},
 	exam: {
 		title: 'Probeprüfung',
-		intro: 'Die Prüfung hat 33 Fragen und dauert 60 Minuten. Du brauchst mindestens 17 richtige Antworten. Während der Prüfung siehst du kein Ergebnis, du kannst aber vor und zurück gehen und Antworten ändern.',
+		intro: 'Die Prüfung hat 33 Fragen und dauert 60 Minuten. Du brauchst mindestens 17 richtige Antworten. Während der Prüfung siehst du kein Ergebnis, du kannst aber vor und zurück gehen und Antworten ändern. Mit „Gesamte Prüfung abgeben“ beendest du die ganze Prüfung.',
 		start: 'Prüfung starten',
 		startFailed: 'Die Prüfung konnte nicht gestartet werden.',
 		progress: 'Frage {n} von {total}',
 		previous: 'Zurück',
-		next: 'Weiter',
-		submit: 'Abgeben',
-		confirmSubmit: 'Es sind noch {open} Fragen offen. Trotzdem abgeben?',
-		yes: 'Ja, abgeben',
+		next: 'Antwort abgeben',
+		submit: 'Gesamte Prüfung abgeben',
+		confirmSubmit: 'Es sind noch {open} Fragen offen. Die gesamte Prüfung trotzdem abgeben?',
+		confirmAll: 'Alle Fragen sind beantwortet. Die gesamte Prüfung jetzt abgeben?',
+		yes: 'Ja, Prüfung abgeben',
 		no: 'Weiter prüfen',
 		timeLeft: 'Restzeit',
 		timeUp: 'Die Zeit ist abgelaufen. Deine Antworten wurden abgegeben.',
@@ -64,6 +67,10 @@ const de = {
 		correctAnswer: 'Richtig',
 		noAnswer: 'keine Antwort',
 		overview: 'Zur Übersicht'
+	},
+	report: {
+		title: 'Auswertung',
+		failed: 'Diese Auswertung konnte nicht geladen werden.'
 	},
 	settings: {
 		title: 'Einstellungen',

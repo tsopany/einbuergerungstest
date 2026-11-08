@@ -10,6 +10,7 @@ export const Exams = defineEntity({
 		finished_at: p.datetime().columnType("timestamptz").nullable(),
 		score: p.smallint().nullable(),
 		passed: p.boolean().nullable(),
+		question_ids: p.json<string[]>().nullable(),
 	}),
 });
 

@@ -2,7 +2,10 @@
 	<div class="page">
 		<AppHeader />
 		<main class="main">
-			<h1>{{ t('exam.title') }}</h1>
+			<div class="title-row">
+				<h1>{{ t('exam.title') }}</h1>
+				<span v-if="phase === 'running' && question" class="mono timer" :class="{low: remaining < 5 * 60_000}" role="timer">{{ t('exam.timeLeft') }} {{ clock }}</span>
+			</div>
 			<template v-if="phase === 'idle'">
 				<p class="intro">{{ t('exam.intro') }}</p>
 				<p v-if="error" class="err" role="alert">{{ error }}</p>
@@ -12,21 +15,6 @@
 				</div>
 			</template>
 			<template v-else-if="phase === 'running' && question">
-				<div class="row">
-					<span class="mono muted progress">{{ t('exam.progress', {n: current + 1, total: questionIds.length}) }}</span>
-					<span class="mono timer" :class="{low: remaining < 5 * 60_000}" role="timer">{{ t('exam.timeLeft') }} {{ clock }}</span>
-				</div>
-				<div class="numbers">
-					<button
-						v-for="(id, index) in questionIds"
-						:key="id"
-						class="number"
-						:class="{answered: chosen.has(id), current: index === current}"
-						type="button"
-						@click="current = index">
-						{{ index + 1 }}
-					</button>
-				</div>
 				<img v-for="file in question.images" v-show="!pictures" :key="file" class="question-image" :src="imageUrl(file)" alt="" @load="onImage" @error="onImage" />
 				<h2 class="question-text">{{ question.text }}</h2>
 				<div class="options" :class="{pictures}">
@@ -45,7 +33,7 @@
 				<p v-if="question.credit" class="credit">{{ question.credit }}</p>
 				<p v-if="error" class="err" role="alert">{{ error }}</p>
 				<div v-if="confirming" class="confirm" role="alertdialog">
-					<span>{{ t('exam.confirmSubmit', {open: questionIds.length - chosen.size}) }}</span>
+					<span>{{ questionIds.length === chosen.size ? t('exam.confirmAll') : t('exam.confirmSubmit', {open: questionIds.length - chosen.size}) }}</span>
 					<div class="row">
 						<button class="primary confirm-yes" type="button" @click="submit(false)">{{ t('exam.yes') }}</button>
 						<button class="ghost confirm-no" type="button" @click="confirming = false">{{ t('exam.no') }}</button>
@@ -55,6 +43,18 @@
 					<button class="ghost previous" type="button" :disabled="current === 0" @click="current -= 1">{{ t('exam.previous') }}</button>
 					<button class="ghost forward" type="button" :disabled="current === questionIds.length - 1" @click="current += 1">{{ t('exam.next') }}</button>
 					<button class="primary submit" type="button" :disabled="submitting" @click="ask">{{ t('exam.submit') }}</button>
+				</div>
+				<p class="mono muted progress">{{ t('exam.progress', {n: current + 1, total: questionIds.length}) }}</p>
+				<div class="numbers">
+					<button
+						v-for="(id, index) in questionIds"
+						:key="id"
+						class="number"
+						:class="{answered: chosen.has(id), current: index === current}"
+						type="button"
+						@click="current = index">
+						{{ index + 1 }}
+					</button>
 				</div>
 			</template>
 			<template v-else-if="phase === 'done' && result">
@@ -80,18 +80,22 @@
 </template>
 
 <script setup lang="ts">
-	import {computed, onBeforeUnmount, ref} from 'vue';
+	import {computed, onBeforeUnmount, ref, watch} from 'vue';
 	import {useI18n} from 'vue-i18n';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {ApiError} from '@/lib/api';
+	import {clearRun, loadRun, saveRun} from '@/lib/examRun';
 	import {useImagesReady} from '@/lib/imagesReady';
 	import {optionOrder} from '@/lib/order';
 	import {imageUrl, isPictureOptions, questionById} from '@/lib/questions';
+	import {useAuthStore} from '@/stores/auth';
 	import {useProgressStore, type ExamResult} from '@/stores/progress';
 	import {EXAM} from '#shared/ids';
 
 	const {t} = useI18n();
 	const progress = useProgressStore();
+	const owner = (): string => useAuthStore().user?.id ?? 'anon';
 
 	const phase = ref<'idle' | 'running' | 'done'>('idle');
 	const examId = ref(0);
@@ -109,7 +113,7 @@
 
 	const orders = ref(new Map<string, number[]>());
 	const question = computed(() => questionById.get(questionIds.value[current.value]));
-	const order = computed(() => (question.value ? (orders.value.get(question.value.id) ?? []) : []));
+	const order = computed(() => (question.value ? (orders.value.get(question.value.id) ?? [0, 1, 2, 3]) : []));
 	const {ready, onImage} = useImagesReady(
 		() => question.value?.images.length ?? 0,
 		() => question.value?.id
@@ -130,6 +134,11 @@
 		if (remaining.value === 0) void submit(true);
 	}
 
+	function persist(): void {
+		if (phase.value !== 'running') return;
+		saveRun(owner(), {examId: examId.value, questionIds: questionIds.value, chosen: [...chosen.value], orders: [...orders.value], current: current.value, deadline});
+	}
+
 	async function start(): Promise<void> {
 		error.value = '';
 		try {
@@ -147,6 +156,26 @@
 		remaining.value = EXAM.minutes * 60_000;
 		phase.value = 'running';
 		ticker = setInterval(tick, 1000);
+		persist();
+	}
+
+	function resume(): void {
+		const run = loadRun(owner());
+		if (!run) return;
+		try {
+			chosen.value = new Map(run.chosen);
+			orders.value = new Map(run.orders);
+		} catch {
+			clearRun(owner());
+			return;
+		}
+		examId.value = run.examId;
+		questionIds.value = run.questionIds;
+		current.value = run.current;
+		deadline = run.deadline;
+		phase.value = 'running';
+		ticker = setInterval(tick, 1000);
+		tick();
 	}
 
 	function choose(index: number): void {
@@ -154,8 +183,7 @@
 	}
 
 	function ask(): void {
-		if (chosen.value.size === questionIds.value.length) void submit(false);
-		else confirming.value = true;
+		confirming.value = true;
 	}
 
 	async function submit(auto: boolean): Promise<void> {
@@ -167,9 +195,15 @@
 			result.value = await progress.finishExam(examId.value, questionIds.value, chosen.value);
 			timedOut.value = auto;
 			stopTicker();
+			clearRun(owner());
 			phase.value = 'done';
-		} catch {
+		} catch (failure) {
 			error.value = t('exam.submitFailed');
+			if (failure instanceof ApiError && (failure.status === 404 || failure.status === 409)) {
+				stopTicker();
+				clearRun(owner());
+				phase.value = 'idle';
+			}
 		} finally {
 			submitting.value = false;
 		}
@@ -180,5 +214,7 @@
 		return index === undefined ? t('exam.noAnswer') : (questionById.get(id)?.options[index] ?? t('exam.noAnswer'));
 	}
 
+	watch([chosen, current], persist);
+	resume();
 	onBeforeUnmount(stopTicker);
 </script>

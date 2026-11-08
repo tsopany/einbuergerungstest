@@ -2,6 +2,7 @@
 	<header class="app-bar">
 		<div class="who-bar">
 			<router-link class="brand mono" to="/">{{ t('app.name') }}</router-link>
+			<span v-if="demo" class="who mono">{{ t('app.demo') }}</span>
 			<span v-if="auth.user" class="who mono">{{ auth.user.name || auth.user.email }}</span>
 		</div>
 		<nav class="mono" :aria-label="t('nav.label')">
@@ -28,10 +29,12 @@
 	import {useI18n} from 'vue-i18n';
 	import {useRouter} from 'vue-router';
 
+	import {isDemo} from '@/lib/demo';
 	import {theme, toggleTheme} from '@/lib/theme';
 	import {useAuthStore} from '@/stores/auth';
 
 	const {t} = useI18n();
+	const demo = isDemo();
 	const auth = useAuthStore();
 	const router = useRouter();
 

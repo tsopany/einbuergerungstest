@@ -3,6 +3,7 @@ import {nextTick} from 'vue';
 
 import {fail, signedIn, stubApi} from '../_helpers/api';
 import i18n from '@/lib/i18n';
+import {loadRun, saveRun} from '@/lib/examRun';
 import {setShuffleAnswers} from '@/lib/order';
 import {questionById} from '@/lib/questions';
 import {useProgressStore} from '@/stores/progress';
@@ -38,7 +39,10 @@ async function running(routes?: Record<string, unknown>, ids?: string[]) {
 }
 
 describe('Exam', () => {
-	beforeEach(() => vi.useFakeTimers());
+	beforeEach(() => {
+		vi.useFakeTimers();
+		localStorage.clear();
+	});
 	afterEach(() => vi.useRealTimers());
 
 	it('explains the exam before it starts and says so when it cannot start', async () => {
@@ -53,6 +57,56 @@ describe('Exam', () => {
 		await settle();
 		expect(wrapper.find('.err').exists()).toBe(false);
 		expect(wrapper.find('.timer').exists()).toBe(true);
+	});
+
+	it('continues where it was after a refresh, with the answers, the position and the running clock', async () => {
+		const first = await running();
+		await first.wrapper.findAll('.option')[1].trigger('click');
+		await first.wrapper.find('.forward').trigger('click');
+		await vi.advanceTimersByTimeAsync(5000);
+		first.wrapper.unmount();
+		const {wrapper} = await mountExam();
+		expect(wrapper.find('.progress').text()).toBe('Frage 2 von 3');
+		expect(wrapper.findAll('.number')[0].classes()).toContain('answered');
+		expect(wrapper.find('.timer').text()).toContain('59:55');
+		await wrapper.find('.previous').trigger('click');
+		expect(wrapper.findAll('.option')[1].classes()).toContain('selected');
+	});
+
+	it('hands in by itself when the time ran out while the page was closed', async () => {
+		saveRun('u1', {examId: 5, questionIds: IDS, chosen: [['1', key('1')]], orders: [], current: 0, deadline: Date.now() - 1000});
+		const {wrapper, calls} = await mountExam();
+		await settle();
+		expect(calls.find((call) => call.path === '/api/exams/5/finish')?.body.answers).toEqual([{questionId: '1', chosen: key('1')}]);
+		expect(wrapper.find('.timeup').exists()).toBe(true);
+		expect(loadRun('u1')).toBeNull();
+	});
+
+	it('starts fresh when the saved exam is damaged', async () => {
+		localStorage.setItem('exam-run:u1', JSON.stringify({examId: 5, questionIds: IDS, chosen: [1], orders: [], current: 0, deadline: Date.now() + 60_000}));
+		const {wrapper} = await mountExam();
+		expect(wrapper.find('.start').exists()).toBe(true);
+		expect(loadRun('u1')).toBeNull();
+	});
+
+	it('forgets the saved exam once it is handed in', async () => {
+		const {wrapper} = await running();
+		expect(loadRun('u1')).not.toBeNull();
+		await wrapper.find('.submit').trigger('click');
+		await wrapper.find('.confirm-yes').trigger('click');
+		await settle();
+		expect(wrapper.find('.result').exists()).toBe(true);
+		expect(loadRun('u1')).toBeNull();
+	});
+
+	it('drops a saved exam the server no longer knows and goes back to the start', async () => {
+		const {wrapper} = await running({...baseRoutes, 'POST /api/exams/5/finish': fail(404)});
+		await wrapper.find('.submit').trigger('click');
+		await wrapper.find('.confirm-yes').trigger('click');
+		await settle();
+		expect(wrapper.find('.start').exists()).toBe(true);
+		expect(wrapper.find('.err').text()).toContain('nicht abgegeben');
+		expect(loadRun('u1')).toBeNull();
 	});
 
 	it('keeps a shuffled order for a question across navigation and submits original indexes', async () => {
@@ -163,7 +217,7 @@ describe('Exam', () => {
 		expect(wrapper.find('.timer').exists()).toBe(false);
 	});
 
-	it('hands in at once when everything is answered, and shows a pass', async () => {
+	it('asks once more even when everything is answered, then hands in, and shows a pass', async () => {
 		const passed = {score: 33, passed: true, wrong: []};
 		const {wrapper} = await running({...baseRoutes, 'POST /api/exams/5/finish': passed});
 		for (const [index, id] of IDS.entries()) {
@@ -172,8 +226,9 @@ describe('Exam', () => {
 			await wrapper.findAll('.option')[key(id)].trigger('click');
 		}
 		await wrapper.find('.submit').trigger('click');
+		expect(wrapper.find('.confirm').text()).toContain('Alle Fragen sind beantwortet');
+		await wrapper.find('.confirm-yes').trigger('click');
 		await settle();
-		expect(wrapper.find('.confirm').exists()).toBe(false);
 		expect(wrapper.find('.result').text()).toBe('BESTANDEN');
 		expect(wrapper.find('.result').classes()).toContain('passed');
 		expect(wrapper.find('.wrong-list').exists()).toBe(false);

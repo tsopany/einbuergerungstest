@@ -50,6 +50,19 @@ describe("exam routes", () => {
 		expect(answers.filter((answer: { examId: number }) => answer.examId === id)).toHaveLength(33);
 	});
 
+	it("serves the report of a finished exam to its owner only", async () => {
+		const id = await start();
+		expect((await app.inject({ url: `/api/exams/${id}`, headers: bearer(app, userId) })).statusCode).toBe(404);
+		await finish(id, submission(30));
+		const report = await app.inject({ url: `/api/exams/${id}`, headers: bearer(app, userId) });
+		expect(report.statusCode).toBe(200);
+		expect(report.json()).toMatchObject({ id, score: 30, passed: true });
+		expect(report.json().questions).toHaveLength(33);
+		expect((await app.inject({ url: `/api/exams/${id}`, headers: bearer(app, otherId) })).statusCode).toBe(404);
+		expect((await app.inject({ url: `/api/exams/${id}` })).statusCode).toBe(401);
+		expect((await app.inject({ url: "/api/exams/abc", headers: bearer(app, userId) })).statusCode).toBe(400);
+	});
+
 	it("only lets the owner finish, and only once", async () => {
 		const id = await start();
 		expect((await finish(id, submission(33), otherId)).statusCode).toBe(404);

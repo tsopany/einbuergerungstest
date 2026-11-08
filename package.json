@@ -13,6 +13,7 @@
 		"nexus:analyze": "gitnexus analyze",
 		"nexus:setup": "gitnexus setup",
 		"sync": "git pull && git fetch origin && pnpm i && git branch",
+		"demo": "pnpm -C client demo",
 		"up": "pnpm up -i",
 		"l": "pnpm up -i -L",
 		"main": "git checkout main && git pull && git fetch origin && git branch",

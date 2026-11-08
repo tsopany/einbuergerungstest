@@ -68,7 +68,7 @@ export async function finishExam(
 		const updated = await tx.nativeUpdate(
 			Exams,
 			{ id: examId, user_id: userId, finished_at: null },
-			{ finished_at: now, score: result.score, passed: result.passed },
+			{ finished_at: now, score: result.score, passed: result.passed, question_ids: submission.questionIds },
 		);
 		if (!updated) throw new ConflictError("Exam already finished", "exam_finished");
 		if (submission.answers.length)
@@ -89,5 +89,26 @@ export async function finishExam(
 		score: result.score,
 		passed: result.passed,
 		wrong: result.wrong.map((id) => ({ questionId: id, correctIndex: questionById.get(id)!.correct })),
+	};
+}
+
+/** Every question of a finished exam with the answer given (null if left open) and the right one; exams from before the list was kept show only the answered questions. */
+export async function examReport(em: EntityManager, userId: string, examId: number) {
+	const exam = await em.findOne(Exams, { id: examId, user_id: userId, finished_at: { $ne: null } });
+	if (!exam) throw new NotFoundError("Exam not found", "exam_not_found");
+	const rows = await em.find(Answers, { exam_id: examId, user_id: userId }, { orderBy: { id: "asc" } });
+	const chosen = new Map(rows.map((row) => [row.question_id, row.chosen]));
+	const ids = exam.question_ids ?? rows.map((row) => row.question_id);
+	return {
+		id: exam.id,
+		startedAt: exam.started_at.getTime(),
+		finishedAt: (exam.finished_at as Date).getTime(),
+		score: exam.score as number,
+		passed: exam.passed as boolean,
+		questions: ids.map((questionId) => ({
+			questionId,
+			chosen: chosen.get(questionId) ?? null,
+			correctIndex: questionById.get(questionId)!.correct,
+		})),
 	};
 }

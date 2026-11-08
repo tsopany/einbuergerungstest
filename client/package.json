@@ -11,6 +11,7 @@
 	"author": "Tsopany",
 	"license": "MIT",
 	"scripts": {
+		"demo": "VITE_DEMO=true VITE_API_BASE_URL=http://localhost:8115 vite serve --port 3051 --open",
 		"serve": "infisical run --env=dev --recursive -- vite serve --port 3051 --open",
 		"build": "vue-tsc && vite build",
 		"typecheck": "vue-tsc --noEmit",

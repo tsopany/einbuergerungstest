@@ -14,7 +14,7 @@
 					<router-link class="primary practice" to="/p/frage">{{ t('home.practice') }}</router-link>
 					<router-link class="ghost easy" :to="{path: '/p/frage', query: {mode: 'easy'}}">{{ t('home.practiceEasy') }}</router-link>
 					<router-link class="ghost weak" :to="{path: '/p/frage', query: {mode: 'weak'}}">{{ t('home.practiceWeak') }}</router-link>
-					<router-link class="ghost exam" to="/p/pruefung">{{ t('home.exam') }}</router-link>
+					<router-link class="primary exam" to="/p/pruefung">{{ t('home.exam') }}</router-link>
 				</div>
 				<section class="counts">
 					<div class="stats">
@@ -73,7 +73,11 @@
 					<ul v-else class="list history">
 						<li v-for="exam in progress.exams" :key="exam.id">
 							<span>{{ new Date(exam.finishedAt).toLocaleString('de-DE') }}</span>
-							<span class="mono">{{ exam.score }}/33 · {{ exam.passed ? t('home.passed') : t('home.failed') }}</span>
+							<span class="mono"
+								>{{ exam.score }}/33 · {{ exam.passed ? t('home.passed') : t('home.failed') }} ·
+								{{ t('home.duration', {time: formatDuration(exam.finishedAt - exam.startedAt)}) }} ·
+								<router-link class="link report" :to="`/p/pruefung/${exam.id}`">{{ t('home.report') }}</router-link></span
+							>
 						</li>
 					</ul>
 				</section>
@@ -87,6 +91,7 @@
 	import {useI18n} from 'vue-i18n';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {formatDuration} from '@/lib/format';
 	import {questionById} from '@/lib/questions';
 	import {useProgressStore} from '@/stores/progress';
 	import {QUESTION_COUNT as total} from '#shared/ids';

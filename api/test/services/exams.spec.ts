@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getEm } from "@/db/orm";
-import { finishExam, GRACE_MS, listExams, startExam } from "@/services/exams";
+import { examReport, finishExam, GRACE_MS, listExams, startExam } from "@/services/exams";
 import { listAnswers } from "@/services/answers";
 import { closeOrm, initOrm, resetDatabase, seedUser, withClient } from "#testdb";
 import { EXAM_IDS, submission } from "../_helpers/exam";
@@ -30,6 +30,41 @@ describe("exams service", () => {
 		const [listed] = await listExams(getEm(), userId);
 		expect(listed).toMatchObject({ id: started.id, score: 20, passed: true });
 		expect(listed.finishedAt).toBeGreaterThanOrEqual(listed.startedAt);
+	});
+
+	it("reports every question of a finished exam, open ones included, in exam order", async () => {
+		const started = await startExam(getEm(), userId);
+		const full = submission(20);
+		await finishExam(getEm(), userId, started.id, {
+			questionIds: full.questionIds,
+			answers: full.answers.slice(0, 31),
+		});
+		const report = await examReport(getEm(), userId, started.id);
+		expect(report).toMatchObject({ id: started.id, score: 20, passed: true });
+		expect(report.finishedAt).toBeGreaterThanOrEqual(report.startedAt);
+		expect(report.questions.map((question) => question.questionId)).toEqual(EXAM_IDS);
+		expect(report.questions[0]).toEqual({
+			questionId: "1",
+			chosen: full.answers[0].chosen,
+			correctIndex: full.answers[0].chosen,
+		});
+		expect(report.questions.slice(-2).map((question) => question.chosen)).toEqual([null, null]);
+	});
+
+	it("falls back to the answered questions for an exam finished before the list was kept", async () => {
+		const started = await startExam(getEm(), userId);
+		await finishExam(getEm(), userId, started.id, submission(3));
+		await withClient((client) => client.query("update exams set question_ids = null where id = $1", [started.id]));
+		getEm().clear();
+		expect((await examReport(getEm(), userId, started.id)).questions).toHaveLength(33);
+	});
+
+	it("hides unfinished exams and other people's exams", async () => {
+		const open = await startExam(getEm(), userId);
+		await expect(examReport(getEm(), userId, open.id)).rejects.toMatchObject({ code: "exam_not_found" });
+		const done = await startExam(getEm(), userId);
+		await finishExam(getEm(), userId, done.id, submission(33));
+		await expect(examReport(getEm(), otherId, done.id)).rejects.toMatchObject({ code: "exam_not_found" });
 	});
 
 	it("stores the final answers as exam answers and feeds the history", async () => {
