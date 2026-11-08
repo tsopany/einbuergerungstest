@@ -1,0 +1,19 @@
+allowBuilds:
+  '@ladybugdb/core': true
+  '@scarf/scarf': true
+  '@tree-sitter-grammars/tree-sitter-zig': true
+  gitnexus: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+  tree-sitter: true
+  tree-sitter-c-sharp: false
+  tree-sitter-cpp: false
+  tree-sitter-go: false
+  tree-sitter-java: false
+  tree-sitter-javascript: true
+  tree-sitter-php: false
+  tree-sitter-python: false
+  tree-sitter-ruby: false
+  tree-sitter-rust: false
+  tree-sitter-typescript: true

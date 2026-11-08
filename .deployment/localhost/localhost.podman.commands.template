@@ -1,0 +1,43 @@
+## Localhost Podman Commands
+
+Rendered into `localhost.podman.commands.md` (gitignored - contains real secrets, never commit it). Run every command from the repo root.
+
+### 1. Render this template (whenever secrets change; Windows: Git Bash/WSL, mac: any shell)
+
+```bash
+infisical run --env=dev --recursive -c "envsubst < .deployment/localhost/localhost.podman.commands.template > .deployment/localhost/localhost.podman.commands.md"
+```
+
+### 2. Network (once per machine, skip if another tsopany app created it)
+
+```bash
+podman network create tsopany_network
+```
+
+### 3. Postgres
+
+Shared by every tsopany app on this machine. If the container already exists (`podman ps -a`), only `podman start postgres` and go to step 4.
+
+```bash
+podman run -d --restart unless-stopped --name postgres --net tsopany_network -p 5432:5432 -e POSTGRES_DB=${DB_DATABASE} -e POSTGRES_USER=${DB_USER} -e POSTGRES_PASSWORD=${DB_PASSWORD} -v postgres-data:/var/lib/postgresql/data postgres:17
+```
+
+### 4. Database on an existing postgres (once per machine)
+
+Only when postgres was created by another app. Connect with that app's superuser:
+
+```bash
+podman exec -it postgres psql -U <existing-superuser> -d postgres
+```
+
+```sql
+CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';
+CREATE DATABASE ${DB_DATABASE} OWNER ${DB_USER};
+GRANT ALL PRIVILEGES ON DATABASE ${DB_DATABASE} TO ${DB_USER};
+```
+
+### 5. Check
+
+```bash
+podman exec -it postgres psql -U ${DB_USER} -d ${DB_DATABASE} -c "select current_user, current_database();"
+```

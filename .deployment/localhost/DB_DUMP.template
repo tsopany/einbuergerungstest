@@ -1,0 +1,41 @@
+## Database Dump & Restore (localhost)
+
+Rendered into `DB_DUMP.md` (gitignored - contains real secrets, never commit it). Run every command from the repo root.
+
+### 1. Render this template (Windows: Git Bash/WSL, mac: any shell)
+
+```bash
+infisical run --env=dev --recursive -c "envsubst < .deployment/localhost/DB_DUMP.template > .deployment/localhost/DB_DUMP.md"
+```
+
+### 2. Install 7-Zip (once per machine)
+
+- macOS: `brew install sevenzip` (command: `7zz`)
+- Windows: `winget install 7zip.7zip` (command: `C:\Program Files\7-Zip\7z.exe`, not on PATH by default)
+
+### 3. Dump & restore
+
+Scripts live in `.deployment/localhost/scripts/` (`.sh` for macOS, `.ps1` for Windows) and can be run from any directory. Archives land in `.deployment/localhost/dump/` as
+timestamped `.7z` files; each dump deletes the previous one, so only the latest is kept. Commit the `.7z` files; the uncompressed `.sql` is gitignored.
+
+Plain SQL dump (`pg_dump -Fp --clean --if-exists`), restored with `psql`.
+
+#### macOS (zsh/bash)
+
+```bash
+bash .deployment/localhost/scripts/db-dump.sh ${DB_USER} ${DB_DATABASE}
+```
+
+```bash
+bash .deployment/localhost/scripts/db-restore.sh ${DB_USER} ${DB_DATABASE}
+```
+
+#### Windows (PowerShell)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .deployment\localhost\scripts\db-dump.ps1 ${DB_USER} ${DB_DATABASE}
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .deployment\localhost\scripts\db-restore.ps1 ${DB_USER} ${DB_DATABASE}
+```

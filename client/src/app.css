@@ -1,0 +1,270 @@
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--font-sans);
+	font-size: var(--font-size);
+	line-height: var(--line-height);
+	-webkit-font-smoothing: antialiased;
+}
+* {
+	box-sizing: border-box;
+}
+.page {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+.main {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 48px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+.main h1 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 600;
+}
+.main h2 {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+}
+.main p {
+	margin: 0;
+}
+.muted {
+	color: var(--ink2);
+}
+.mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	border-radius: 0;
+}
+button:focus-visible,
+a:focus-visible {
+	outline: 1.5px solid var(--fg);
+	outline-offset: 2px;
+}
+.ghost,
+.primary {
+	display: inline-block;
+	padding: 10px 14px;
+	border: 1px solid var(--line);
+	color: var(--fg);
+	text-decoration: none;
+	font-size: 13px;
+}
+.ghost:hover {
+	border-color: var(--fg);
+}
+.primary {
+	border-color: var(--fg);
+	background: var(--fg);
+	color: var(--bg);
+}
+.primary:hover {
+	opacity: 0.85;
+}
+.link {
+	color: var(--ink2);
+	text-decoration: none;
+}
+.link:hover {
+	color: var(--fg);
+}
+.err {
+	border: 1px solid var(--fg);
+	padding: 6px 10px;
+	font-size: 12.5px;
+}
+.app-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px 20px;
+	padding: 12px 20px;
+	border-bottom: 1px solid var(--line);
+}
+.app-bar nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	font-size: 12px;
+}
+.brand {
+	font-weight: 600;
+	font-size: 13px;
+	color: inherit;
+	text-decoration: none;
+}
+.main.wide {
+	max-width: 880px;
+}
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+}
+.stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
+}
+.stat {
+	border-top: 1px solid var(--fg);
+	padding-top: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.stat strong {
+	font-size: 22px;
+	font-weight: 600;
+}
+.bar {
+	display: flex;
+	height: 8px;
+	border: 1px solid var(--line);
+}
+.bar span {
+	display: block;
+}
+.bar .mastered {
+	background: var(--acc);
+}
+.bar .progress {
+	background: var(--ink3);
+}
+.list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+.list li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--line);
+}
+.question-text {
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.35;
+}
+.options {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.options.pictures {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.option {
+	display: block;
+	width: 100%;
+	text-align: left;
+	padding: 12px 14px;
+	border: 1px solid var(--line);
+	font-size: 14px;
+}
+.option:hover:not(:disabled) {
+	border-color: var(--fg);
+}
+.option.selected {
+	border-color: var(--fg);
+	background: var(--hover);
+}
+.option.right {
+	border-color: var(--acc);
+	background: color-mix(in srgb, var(--acc) 18%, var(--bg));
+}
+.option.wrong {
+	border-color: var(--err);
+	background: color-mix(in srgb, var(--err) 18%, var(--bg));
+}
+.option img,
+.question-image {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin-bottom: 6px;
+}
+.credit {
+	font-size: 11px;
+	color: var(--ink2);
+}
+.verdict {
+	font-weight: 600;
+}
+.verdict.right {
+	color: var(--acc);
+}
+.verdict.wrong {
+	color: var(--err);
+}
+.numbers {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+	gap: 4px;
+}
+.number {
+	padding: 6px 0;
+	border: 1px solid var(--line);
+	text-align: center;
+	font-size: 12px;
+}
+.number.answered {
+	background: var(--hover);
+}
+.number.current {
+	border-color: var(--fg);
+	font-weight: 600;
+}
+.timer {
+	font-size: 22px;
+	font-weight: 600;
+}
+.timer.low {
+	color: var(--err);
+}
+.result {
+	font-size: 26px;
+	font-weight: 600;
+}
+.result.passed {
+	color: var(--acc);
+}
+.result.failed {
+	color: var(--err);
+}
+.confirm {
+	border: 1px solid var(--fg);
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.danger {
+	border-color: var(--err);
+	color: var(--err);
+}

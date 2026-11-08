@@ -1,0 +1,176 @@
+name: MAIN Analyze
+
+on:
+    push:
+        branches: [ "main" ]
+        paths:
+            - 'client/**'
+            - 'api/**'
+            - 'shared/**'
+            - 'sonar-project.properties'
+            - '.github/workflows/check-main-analyze.yml'
+    workflow_dispatch:
+        inputs:
+            reason:
+                description: 'Reason for manual run'
+                required: false
+                default: 'Manual update'
+
+jobs:
+    test-client:
+        name: Test Client
+        runs-on: ubuntu-latest
+        environment: production
+        defaults:
+            run:
+                working-directory: ./client
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+                    cache: pnpm
+                    cache-dependency-path: client/pnpm-lock.yaml
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Test Coverage
+                run: pnpm check
+
+            -   name: Upload Client Coverage
+                uses: actions/upload-artifact@v4
+                with:
+                    name: client-coverage
+                    path: client/coverage/lcov.info
+
+    test-api:
+        name: Test API
+        runs-on: ubuntu-latest
+        environment: production
+        defaults:
+            run:
+                working-directory: ./api
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+                    cache: pnpm
+                    cache-dependency-path: api/pnpm-lock.yaml
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Test Coverage
+                run: pnpm check
+
+            -   name: Upload API Coverage
+                uses: actions/upload-artifact@v4
+                with:
+                    name: api-coverage
+                    path: api/coverage/lcov.info
+
+    test-real-api:
+        name: Test API on Postgres
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:17
+                env:
+                    POSTGRES_USER: einbuergerungstest
+                    POSTGRES_PASSWORD: einbuergerungstest
+                    POSTGRES_DB: postgres
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U einbuergerungstest -d postgres"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 10
+        env:
+            REAL_DATABASE_URL: postgresql://einbuergerungstest:einbuergerungstest@localhost:5432/postgres
+        defaults:
+            run:
+                working-directory: ./api
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+                    cache: pnpm
+                    cache-dependency-path: api/pnpm-lock.yaml
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Test on Postgres
+                run: pnpm test:real
+
+    sonarqube:
+        name: SonarQube Analysis
+        runs-on: ubuntu-latest
+        environment: production
+        needs: [ test-client, test-api, test-real-api ]
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+
+            -   name: Download Client Coverage
+                uses: actions/download-artifact@v4
+                with:
+                    name: client-coverage
+                    path: client/coverage
+
+            -   name: Download API Coverage
+                uses: actions/download-artifact@v4
+                with:
+                    name: api-coverage
+                    path: api/coverage
+
+            -   uses: SonarSource/sonarqube-scan-action@v6
+                env:
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+            -   uses: SonarSource/sonarqube-quality-gate-action@v1
+                timeout-minutes: 5
+                env:
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

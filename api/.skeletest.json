@@ -1,0 +1,24 @@
+{
+  "srcFolderName": "src",
+  "filesExtensions": [
+    "js",
+    "ts",
+    "json"
+  ],
+  "testFolderName": "test",
+  "testFileExtensionPrefix": "spec",
+  "testExtension": "ts",
+  "useVitest": true,
+  "ignoreMocksFolder": true,
+  "ignoreSrcFiles": [],
+  "ignoreTestFiles": [
+    "test/_helpers/seeds.ts",
+    "test/_helpers/db.pglite.ts",
+    "test/_helpers/db.real.ts",
+    "test/_helpers/server.ts",
+    "test/_helpers/migrations.ts",
+    "test/_helpers/exam.ts",
+    "test/db/schema.spec.ts",
+    "test/real/setup.ts"
+  ]
+}

@@ -1,0 +1,48 @@
+name: Developer Branch Build Client
+
+on:
+    push:
+        branches:
+            - '**'          # Matches all branches
+            - '!main'       # Excludes main
+            - '!stage'      # Excludes staging
+            - '!production' # Excludes production
+        paths:
+            - 'client/**'
+            - 'shared/**'
+            - '.github/workflows/check-dev-client.yml'
+
+jobs:
+    build-client:
+        name: Build Client on Developer Branches
+        runs-on: ubuntu-latest
+        environment: production
+        defaults:
+            run:
+                working-directory: ./client
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: PNPM Version
+                run: pnpm -v
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Validate
+                run: pnpm check
+                env:
+                    VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}

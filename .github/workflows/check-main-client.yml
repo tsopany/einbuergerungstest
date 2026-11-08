@@ -1,0 +1,62 @@
+name: MAIN Build & Deploy Client
+
+on:
+    push:
+        branches: [ "main" ]
+        paths:
+            - 'client/**'
+            - 'shared/**'
+            - '.github/workflows/check-main-client.yml'
+    workflow_dispatch:
+        inputs:
+            reason:
+                description: 'Reason for manual run'
+                required: false
+                default: 'Manual update'
+
+jobs:
+    build-deploy-client:
+        name: Build & Deploy Client to the VM
+        runs-on: ubuntu-latest
+        environment: production
+        defaults:
+            run:
+                working-directory: ./client
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: PNPM Version
+                run: pnpm -v
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Build
+                run: pnpm build
+                env:
+                    VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+            -   name: Deploy to Server
+                uses: appleboy/scp-action@v0.1.7
+                with:
+                    host: ${{ vars.SSH_HOST }}
+                    username: ${{ vars.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_PRIVATE_KEY }}
+                    port: 22
+                    source: "client/dist/*"
+                    target: "/var/deploy/einbuergerungstest/client"
+                    strip_components: 2
+                    overwrite: true

@@ -1,0 +1,10 @@
+{
+	"name": "@einbuergerungstest/shared",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"dependencies": {
+		"zod": "^4.4.3"
+	},
+	"packageManager": "pnpm@12.8.2"
+}

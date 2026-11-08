@@ -1,0 +1,35 @@
+{
+	"name": "einbuergerungstest",
+	"private": true,
+	"version": "0.0.1",
+	"engines": {
+		"node": ">=24.6.0"
+	},
+	"description": "Einbürgerungstest Trainer",
+	"author": "Tsopany",
+	"license": "MIT",
+	"scripts": {
+		"nexus": "pnpm nexus:setup && pnpm nexus:analyze",
+		"nexus:analyze": "gitnexus analyze",
+		"nexus:setup": "gitnexus setup",
+		"sync": "git pull && git fetch origin && pnpm i && git branch",
+		"up": "pnpm up -i",
+		"l": "pnpm up -i -L",
+		"main": "git checkout main && git pull && git fetch origin && git branch",
+		"fix": "pnpm -C shared i && pnpm -C api fix && pnpm -C client fix",
+		"check": "pnpm -C shared i && pnpm -C api check && pnpm -C client check",
+		"test": "pnpm -C api test && pnpm -C client test",
+		"quick": "pnpm -C api quick && pnpm -C client quick",
+		"real": "pnpm -C api test:real",
+		"schema": "pnpm -C api extract:schema",
+		"secrets": "infisical run --env=dev --recursive -c \"envsubst < .deployment/localhost/api.env.template > api/.env && envsubst < .deployment/localhost/localhost.podman.commands.template > .deployment/localhost/localhost.podman.commands.md && envsubst < .deployment/localhost/DB_DUMP.template > .deployment/localhost/DB_DUMP.md\"",
+		"commit": "commit"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"@commitlint/prompt-cli": "^21.2.4",
+		"gitnexus": "^1.6.12"
+	},
+	"packageManager": "pnpm@12.8.2"
+}

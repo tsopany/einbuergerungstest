@@ -1,0 +1,137 @@
+name: MAIN Build & Deploy Server
+
+on:
+    push:
+        branches: [ "main" ]
+        paths:
+            - 'api/**'
+            - 'shared/**'
+            - '.github/workflows/check-main-server.yml'
+    workflow_dispatch:
+        inputs:
+            reason:
+                description: 'Reason for manual run'
+                required: false
+                default: 'Manual update'
+
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: tsopany/einbuergerungstest-api
+
+jobs:
+    test-real-api:
+        name: Test API on Postgres
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:17
+                env:
+                    POSTGRES_USER: einbuergerungstest
+                    POSTGRES_PASSWORD: einbuergerungstest
+                    POSTGRES_DB: postgres
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U einbuergerungstest -d postgres"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 10
+        env:
+            REAL_DATABASE_URL: postgresql://einbuergerungstest:einbuergerungstest@localhost:5432/postgres
+        defaults:
+            run:
+                working-directory: ./api
+
+        steps:
+            -   name: Checkout Code
+                uses: actions/checkout@v4
+
+            -   name: Enable corepack
+                run: corepack enable
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '24'
+                    cache: pnpm
+                    cache-dependency-path: api/pnpm-lock.yaml
+
+            -   name: Install Dependencies
+                run: pnpm i --frozen-lockfile
+
+            -   name: Install Shared Dependencies
+                run: pnpm -C ../shared i --frozen-lockfile
+
+            -   name: Test on Postgres
+                run: pnpm test:real
+
+    build-server:
+        name: Build Server
+        runs-on: ubuntu-latest
+        environment: production
+        needs: [ test-real-api ]
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Log in to GHCR
+                uses: docker/login-action@v3
+                with:
+                    registry: ${{ env.REGISTRY }}
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Build and Push Docker image
+                uses: docker/build-push-action@v5
+                with:
+                    context: .
+                    file: api/Dockerfile
+                    push: true
+                    tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+    deploy-server:
+        name: Deploy Server to the VM
+        runs-on: ubuntu-latest
+        environment: production
+        needs: [ build-server, test-real-api ]
+        permissions:
+            contents: read
+
+        steps:
+            -   name: Pull Docker Image
+                uses: appleboy/ssh-action@v1.0.3
+                with:
+                    host: ${{ vars.SSH_HOST }}
+                    username: ${{ vars.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_PRIVATE_KEY }}
+                    script: |
+                        cd /var/deploy/einbuergerungstest
+                        echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+                        docker compose pull einbuergerungstest-api
+
+            -   name: Start API
+                uses: appleboy/ssh-action@v1.0.3
+                with:
+                    host: ${{ vars.SSH_HOST }}
+                    username: ${{ vars.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_PRIVATE_KEY }}
+                    script: |
+                        cd /var/deploy/einbuergerungstest
+                        docker compose up -d einbuergerungstest-api
+
+            -   name: Wait for API
+                run: |
+                    for i in $(seq 1 10); do
+                      if curl -sf ${{ vars.VITE_API_BASE_URL }}/api/health > /dev/null 2>&1; then
+                        echo "API is ready"
+                        exit 0
+                      fi
+                      echo "Waiting for API... ($i/10)"
+                      sleep 5
+                    done
+                    echo "API failed to start"
+                    exit 1
