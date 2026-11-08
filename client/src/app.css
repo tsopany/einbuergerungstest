@@ -211,6 +211,8 @@ a:focus-visible {
 }
 .report-item .status {
 	flex: none;
+	font-size: 2em;
+	line-height: 1;
 }
 .report-item.right .status {
 	color: var(--acc);
