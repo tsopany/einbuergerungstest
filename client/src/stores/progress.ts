@@ -7,6 +7,7 @@ import {useAuthStore} from '@/stores/auth';
 import {buildExam} from '#shared/exam';
 import {QUESTION_IDS} from '#shared/ids';
 import {pickNext, type Mode} from '#shared/picker';
+import {mulberry32} from '#shared/rng';
 import {deriveStates, type Answer} from '#shared/state';
 import {accuracy, readiness, summarize, weakest} from '#shared/stats';
 
@@ -57,7 +58,7 @@ export const useProgressStore = defineStore('progress', () => {
 	const summary = computed(() => summarize(QUESTION_IDS, states.value));
 	const weakestIds = computed(() => weakest(QUESTION_IDS, states.value));
 	const rates = () => accuracy(answers.value, Date.now());
-	const readinessNow = () => readiness(QUESTION_IDS, answers.value, random);
+	const readinessNow = () => readiness(QUESTION_IDS, answers.value, mulberry32(Math.floor(random() * 2 ** 32)));
 
 	const next = (mode: Mode): string => pickNext({ids: QUESTION_IDS, answers: answers.value, seed: seed.value, now: Date.now(), rng: random, mode});
 

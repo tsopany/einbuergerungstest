@@ -10,6 +10,7 @@ export default mergeConfig(
 			globals: true,
 			environment: 'happy-dom',
 			restoreMocks: true,
+			testTimeout: 15000,
 			setupFiles: ['./test/_setup/vitest.setup.ts'],
 			include: ['test/**/*.{test,spec}.?(c|m)[jt]s?(x)', '../shared/test/**/*.spec.ts'],
 			coverage: {

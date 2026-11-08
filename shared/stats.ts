@@ -1,5 +1,5 @@
 import { EXAM, compareIds, idNumber } from "./ids";
-import { sample, type Rng } from "./rng";
+import { type Rng } from "./rng";
 import { phaseOf, type Phase } from "./picker";
 import { deriveStates, isMastered, type Answer, type QuestionState } from "./state";
 
@@ -46,6 +46,17 @@ export const chanceOf = (state: QuestionState | undefined): number =>
 
 export type Readiness = { probability: number; expectedScore: number };
 
+/** Right answers among `count` questions drawn at random: a partial shuffle, so a run costs `count` swaps, not a full pass. */
+function drawnScore(chances: number[], count: number, rng: Rng): number {
+	let score = 0;
+	for (let index = 0; index < count; index += 1) {
+		const pick = index + Math.floor(rng() * (chances.length - index));
+		[chances[index], chances[pick]] = [chances[pick], chances[index]];
+		if (rng() < chances[index]) score += 1;
+	}
+	return score;
+}
+
 /** Monte Carlo over random exams (30 general + 3 state questions): how likely 17 or more are right. */
 export function readiness(ids: readonly string[], answers: readonly Answer[], rng: Rng, runs = SIMULATIONS): Readiness {
 	const states = deriveStates(answers);
@@ -56,9 +67,7 @@ export function readiness(ids: readonly string[], answers: readonly Answer[], rn
 	let passed = 0;
 	let total = 0;
 	for (let run = 0; run < runs; run += 1) {
-		const score = [...sample(general, EXAM.general, rng), ...sample(state, EXAM.state, rng)].filter(
-			(chance) => rng() < chance,
-		).length;
+		const score = drawnScore(general, EXAM.general, rng) + drawnScore(state, EXAM.state, rng);
 		total += score;
 		if (score >= EXAM.passMark) passed += 1;
 	}
