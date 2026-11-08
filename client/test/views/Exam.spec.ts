@@ -1,4 +1,4 @@
-import {config, mount, RouterLinkStub} from '@vue/test-utils';
+import {config, mount, RouterLinkStub, type VueWrapper} from '@vue/test-utils';
 import {nextTick} from 'vue';
 
 import {fail, signedIn, stubApi} from '../_helpers/api';
@@ -14,6 +14,9 @@ const IDS = ['1', '21', '55'];
 const key = (id: string) => questionById.get(id)!.correct;
 const wrong = (id: string) => (key(id) + 1) % 4;
 const settle = () => vi.advanceTimersByTimeAsync(0);
+const loadImages = async (wrapper: VueWrapper) => {
+	for (const image of wrapper.findAll('img')) await image.trigger('load');
+};
 
 const result = {score: 2, passed: false, wrong: [{questionId: '55', correctIndex: key('55')}]};
 const baseRoutes = {'POST /api/exams/5/finish': result, 'GET /api/exams': []};
@@ -122,10 +125,23 @@ describe('Exam', () => {
 		expect(calls.some((call) => call.method === 'POST')).toBe(false);
 	});
 
+	it('keeps the options locked until the pictures of a question have loaded', async () => {
+		const {wrapper} = await running();
+		await wrapper.findAll('.number')[1].trigger('click');
+		expect(wrapper.findAll('.option').every((option) => option.attributes('disabled') !== undefined)).toBe(true);
+		await wrapper.findAll('.option img')[0].trigger('error');
+		await wrapper.findAll('.option img')[1].trigger('load');
+		await wrapper.findAll('.option img')[2].trigger('load');
+		expect(wrapper.findAll('.option')[0].attributes('disabled')).toBeDefined();
+		await wrapper.findAll('.option img')[3].trigger('load');
+		expect(wrapper.findAll('.option')[0].attributes('disabled')).toBeUndefined();
+	});
+
 	it('hands in after confirming and shows the result with her wrong or open answers', async () => {
 		const {wrapper, calls} = await running();
 		await wrapper.findAll('.option')[key('1')].trigger('click');
 		await wrapper.findAll('.number')[1].trigger('click');
+		await loadImages(wrapper);
 		await wrapper.findAll('.option')[key('21')].trigger('click');
 		await wrapper.find('.submit').trigger('click');
 		await wrapper.find('.confirm-yes').trigger('click');
@@ -152,6 +168,7 @@ describe('Exam', () => {
 		const {wrapper} = await running({...baseRoutes, 'POST /api/exams/5/finish': passed});
 		for (const [index, id] of IDS.entries()) {
 			await wrapper.findAll('.number')[index].trigger('click');
+			await loadImages(wrapper);
 			await wrapper.findAll('.option')[key(id)].trigger('click');
 		}
 		await wrapper.find('.submit').trigger('click');

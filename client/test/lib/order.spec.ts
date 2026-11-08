@@ -3,6 +3,7 @@ import {questionById} from '@/lib/questions';
 
 const text = questionById.get('1')!;
 const pictures = questionById.get('21')!;
+const numbers = questionById.get('NW-8')!;
 
 describe('order', () => {
 	afterEach(() => {
@@ -27,6 +28,12 @@ describe('order', () => {
 	it('never shuffles picture questions, whose options are labelled Bild 1 to 4', () => {
 		setShuffleAnswers(true);
 		expect(optionOrder(pictures)).toEqual([0, 1, 2, 3]);
+	});
+
+	it('never shuffles options that are plain numbers, such as the map labels 1 to 4', () => {
+		setShuffleAnswers(true);
+		expect(optionOrder(numbers)).toEqual([0, 1, 2, 3]);
+		expect(optionOrder(questionById.get('24')!)).toEqual([0, 1, 2, 3]);
 	});
 
 	it('still switches when storage is blocked', () => {

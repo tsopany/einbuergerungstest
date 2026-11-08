@@ -10,12 +10,19 @@
 			<template v-else>
 				<p class="mono muted header">{{ t('question.header', {label: question.id, seen: progress.summary.seen, total}) }}</p>
 				<template v-if="!pictures">
-					<img v-for="file in question.images" :key="file" class="question-image" :src="imageUrl(file)" alt="" />
+					<img v-for="file in question.images" :key="file" class="question-image" :src="imageUrl(file)" alt="" @load="onImage" @error="onImage" />
 				</template>
 				<h1 class="question-text">{{ question.text }}</h1>
 				<div class="options" :class="{pictures}">
-					<button v-for="index in order" :key="index" class="option" :class="optionClass(index)" type="button" :disabled="chosen !== null" @click="answer(index)">
-						<img v-if="pictures" :src="imageUrl(question.images[index])" :alt="t('question.picture', {n: index + 1})" />
+					<button
+						v-for="index in order"
+						:key="index"
+						class="option"
+						:class="optionClass(index)"
+						type="button"
+						:disabled="chosen !== null || !ready"
+						@click="answer(index)">
+						<img v-if="pictures" :src="imageUrl(question.images[index])" :alt="t('question.picture', {n: index + 1})" @load="onImage" @error="onImage" />
 						{{ question.options[index] }}
 					</button>
 				</div>
@@ -41,6 +48,7 @@
 	import {useRoute, useRouter} from 'vue-router';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {useImagesReady} from '@/lib/imagesReady';
 	import {optionOrder} from '@/lib/order';
 	import {imageUrl, isPictureOptions, questionById} from '@/lib/questions';
 	import {useProgressStore} from '@/stores/progress';
@@ -61,6 +69,10 @@
 	const mode = computed<Mode>(() => (route.query.mode === 'weak' || route.query.mode === 'easy' ? route.query.mode : 'practice'));
 	const question = computed(() => (props.id ? questionById.get(props.id) : undefined));
 	const order = computed(() => (question.value ? optionOrder(question.value) : []));
+	const {ready, onImage} = useImagesReady(
+		() => question.value?.images.length ?? 0,
+		() => question.value?.id
+	);
 	const pictures = computed(() => (question.value ? isPictureOptions(question.value) : false));
 
 	function optionClass(index: number): Record<string, boolean> {

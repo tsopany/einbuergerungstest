@@ -27,8 +27,11 @@ export function setShuffleAnswers(on: boolean): void {
 	}
 }
 
-/** Original option indexes in display order; picture questions ("Bild 1-4") always keep the catalogue order. */
+/** Options that only make sense in their printed order: picture labels ("Bild 1-4") and plain numbers (map labels, ascending figures). */
+const isOrdered = (question: Question): boolean => isPictureOptions(question) || question.options.every((option) => /^\d+$/.test(option.trim()));
+
+/** Original option indexes in display order; ordered questions always keep the catalogue order. */
 export function optionOrder(question: Question): number[] {
 	const fixed = question.options.map((_, index) => index);
-	return shuffleAnswers.value && !isPictureOptions(question) ? shuffle(fixed, random) : fixed;
+	return shuffleAnswers.value && !isOrdered(question) ? shuffle(fixed, random) : fixed;
 }
