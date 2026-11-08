@@ -31,6 +31,7 @@
 							><strong class="unseen">{{ summary.unseen }}</strong>
 						</div>
 					</div>
+					<p class="muted hint">{{ t('home.masteredHint') }}</p>
 					<div class="bar" aria-hidden="true">
 						<span class="mastered" :style="{width: share(summary.mastered)}"></span>
 						<span class="progress" :style="{width: share(summary.inProgress)}"></span>

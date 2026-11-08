@@ -38,6 +38,8 @@ describe('Home', () => {
 		expect(wrapper.find('.overall').text()).toBe('–');
 		expect(wrapper.find('.last-week').text()).toBe('–');
 		expect(wrapper.find('.none').text()).toBe('Noch keine Antworten.');
+		expect(wrapper.find('.counts').text()).toContain('Unsicher');
+		expect(wrapper.find('.hint').text()).toContain('4× richtig in Folge');
 		expect(wrapper.find('.no-history').exists()).toBe(true);
 		expect(wrapper.find('.readiness').text()).toMatch(/Bestehenswahrscheinlichkeit ~\d+ %/);
 		expect(wrapper.find('.expected').text()).toMatch(/Erwartet: [\d.]+ von 33 Punkten/);
