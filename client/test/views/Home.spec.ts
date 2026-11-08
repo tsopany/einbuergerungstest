@@ -48,6 +48,7 @@ describe('Home', () => {
 		const targets = wrapper.findAllComponents(RouterLinkStub).map((link) => link.props('to'));
 		expect(targets).toContainEqual('/p/frage');
 		expect(targets).toContainEqual({path: '/p/frage', query: {mode: 'weak'}});
+		expect(targets).toContainEqual({path: '/p/frage', query: {mode: 'easy'}});
 		expect(targets).toContainEqual('/p/pruefung');
 	});
 

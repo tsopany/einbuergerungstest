@@ -3,6 +3,7 @@ import {createMemoryHistory, createRouter} from 'vue-router';
 
 import {fail, signedIn, stubApi} from '../_helpers/api';
 import i18n from '@/lib/i18n';
+import {shuffleAnswers} from '@/lib/order';
 import {useAuthStore} from '@/stores/auth';
 import Settings from '@/views/Settings.vue';
 
@@ -26,6 +27,16 @@ describe('Settings', () => {
 		await wrapper.find('.reset .no').trigger('click');
 		expect(wrapper.find('.reset .ask').exists()).toBe(true);
 		expect(calls).toEqual([]);
+	});
+
+	it('switches answer shuffling on and off', async () => {
+		const {wrapper} = await mountSettings({});
+		const box = wrapper.find('.shuffle input');
+		expect((box.element as HTMLInputElement).checked).toBe(false);
+		await box.setValue(true);
+		expect(shuffleAnswers.value).toBe(true);
+		await box.setValue(false);
+		expect(shuffleAnswers.value).toBe(false);
 	});
 
 	it('resets the progress after confirmation', async () => {

@@ -14,16 +14,9 @@
 				</template>
 				<h1 class="question-text">{{ question.text }}</h1>
 				<div class="options" :class="{pictures}">
-					<button
-						v-for="(option, index) in question.options"
-						:key="index"
-						class="option"
-						:class="optionClass(index)"
-						type="button"
-						:disabled="chosen !== null"
-						@click="answer(index)">
+					<button v-for="index in order" :key="index" class="option" :class="optionClass(index)" type="button" :disabled="chosen !== null" @click="answer(index)">
 						<img v-if="pictures" :src="imageUrl(question.images[index])" :alt="t('question.picture', {n: index + 1})" />
-						{{ option }}
+						{{ question.options[index] }}
 					</button>
 				</div>
 				<p v-if="question.credit" class="credit">{{ question.credit }}</p>
@@ -48,6 +41,7 @@
 	import {useRoute, useRouter} from 'vue-router';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {optionOrder} from '@/lib/order';
 	import {imageUrl, isPictureOptions, questionById} from '@/lib/questions';
 	import {useProgressStore} from '@/stores/progress';
 	import {QUESTION_COUNT as total} from '#shared/ids';
@@ -64,8 +58,9 @@
 	const chosen = ref<number | null>(null);
 	const correctIndex = ref<number | null>(null);
 
-	const mode = computed<Mode>(() => (route.query.mode === 'weak' ? 'weak' : 'practice'));
+	const mode = computed<Mode>(() => (route.query.mode === 'weak' || route.query.mode === 'easy' ? route.query.mode : 'practice'));
 	const question = computed(() => (props.id ? questionById.get(props.id) : undefined));
+	const order = computed(() => (question.value ? optionOrder(question.value) : []));
 	const pictures = computed(() => (question.value ? isPictureOptions(question.value) : false));
 
 	function optionClass(index: number): Record<string, boolean> {
@@ -74,7 +69,7 @@
 	}
 
 	function next(): Promise<unknown> {
-		const query = mode.value === 'weak' ? {mode: 'weak'} : {};
+		const query = mode.value === 'practice' ? {} : {mode: mode.value};
 		return router.replace({name: 'question', params: {id: progress.next(mode.value)}, query});
 	}
 

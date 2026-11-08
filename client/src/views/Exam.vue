@@ -30,15 +30,9 @@
 				<img v-for="file in question.images" v-show="!pictures" :key="file" class="question-image" :src="imageUrl(file)" alt="" />
 				<h2 class="question-text">{{ question.text }}</h2>
 				<div class="options" :class="{pictures}">
-					<button
-						v-for="(option, index) in question.options"
-						:key="index"
-						class="option"
-						:class="{selected: chosen.get(question.id) === index}"
-						type="button"
-						@click="choose(index)">
+					<button v-for="index in order" :key="index" class="option" :class="{selected: chosen.get(question.id) === index}" type="button" @click="choose(index)">
 						<img v-if="pictures" :src="imageUrl(question.images[index])" :alt="t('question.picture', {n: index + 1})" />
-						{{ option }}
+						{{ question.options[index] }}
 					</button>
 				</div>
 				<p v-if="question.credit" class="credit">{{ question.credit }}</p>
@@ -83,6 +77,7 @@
 	import {useI18n} from 'vue-i18n';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {optionOrder} from '@/lib/order';
 	import {imageUrl, isPictureOptions, questionById} from '@/lib/questions';
 	import {useProgressStore, type ExamResult} from '@/stores/progress';
 	import {EXAM} from '#shared/ids';
@@ -104,7 +99,9 @@
 	let deadline = 0;
 	let ticker: ReturnType<typeof setInterval> | undefined;
 
+	const orders = ref(new Map<string, number[]>());
 	const question = computed(() => questionById.get(questionIds.value[current.value]));
+	const order = computed(() => (question.value ? (orders.value.get(question.value.id) ?? []) : []));
 	const pictures = computed(() => (question.value ? isPictureOptions(question.value) : false));
 	const clock = computed(() => {
 		const seconds = Math.ceil(remaining.value / 1000);
@@ -127,6 +124,7 @@
 			const started = await progress.startExam();
 			examId.value = started.id;
 			questionIds.value = started.questionIds;
+			orders.value = new Map(started.questionIds.map((id) => [id, optionOrder(questionById.get(id)!)]));
 		} catch {
 			error.value = t('exam.startFailed');
 			return;

@@ -1,5 +1,6 @@
 import {
 	BOX_WEIGHTS,
+	EASY_MIN_BOX,
 	COOLDOWN_FACTOR,
 	COOLDOWN_MS,
 	deckOrder,
@@ -215,5 +216,36 @@ describe("weak mode", () => {
 		);
 		expect(picks.filter((id) => id === "1").length).toBeLessThan(40);
 		expect(new Set(picks).size).toBeGreaterThan(3);
+	});
+});
+
+describe("easy mode", () => {
+	const knownWell = (id: string, at: number) =>
+		Array.from({ length: EASY_MIN_BOX }, (_, step) => answer(id, true, at + step));
+
+	it("serves only questions in a high box, never one of the latest answers", () => {
+		const answers = [
+			...knownWell("1", NOW - 80 * HOUR),
+			...knownWell("2", NOW - 79 * HOUR),
+			answer("3", true, NOW - 78 * HOUR),
+			answer("4", false, NOW - 77 * HOUR),
+			...Array.from({ length: RECENT_COUNT }, (_, step) =>
+				answer(`${5 + (step % 2)}`, false, NOW - 70 * HOUR + step),
+			),
+		];
+		const rng = mulberry32(5);
+		const picks = new Set(
+			Array.from({ length: 200 }, () => pickNext({ ids: IDS, answers, seed: 1, now: NOW, rng, mode: "easy" })),
+		);
+		expect([...picks].sort((a, b) => a.localeCompare(b))).toEqual(["1", "2"]);
+	});
+
+	it("leaves out recent answers and falls back to the normal pick when nothing qualifies", () => {
+		const answers = knownWell("1", NOW - 80 * HOUR);
+		const rng = always(0);
+		const base = { ids: IDS, answers: [], seed: 1, now: NOW, rng };
+		expect(pickNext({ ...base, mode: "easy" })).toBe(pickNext({ ...base, mode: "practice" }));
+		const recentOnly = pickNext({ ...base, answers, mode: "easy" });
+		expect(recentOnly).toBe(pickNext({ ...base, answers, mode: "practice" }));
 	});
 });

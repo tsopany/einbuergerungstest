@@ -8,7 +8,7 @@ import { isQuestionId } from "#shared/question";
 const body = z.object({
 	questionId: z.string().refine(isQuestionId, "Unknown question id"),
 	chosen: z.number().int().min(0).max(3),
-	source: z.enum(["practice", "weak"]),
+	source: z.enum(["practice", "weak", "easy"]),
 });
 
 export default async function answerRoutes(app: FastifyInstance) {

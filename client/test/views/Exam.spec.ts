@@ -3,6 +3,7 @@ import {nextTick} from 'vue';
 
 import {fail, signedIn, stubApi} from '../_helpers/api';
 import i18n from '@/lib/i18n';
+import {setShuffleAnswers} from '@/lib/order';
 import {questionById} from '@/lib/questions';
 import {useProgressStore} from '@/stores/progress';
 import Exam from '@/views/Exam.vue';
@@ -49,6 +50,23 @@ describe('Exam', () => {
 		await settle();
 		expect(wrapper.find('.err').exists()).toBe(false);
 		expect(wrapper.find('.timer').exists()).toBe(true);
+	});
+
+	it('keeps a shuffled order for a question across navigation and submits original indexes', async () => {
+		setShuffleAnswers(true);
+		const {wrapper, calls} = await running();
+		const texts = () => wrapper.findAll('.option').map((option) => option.text());
+		const before = texts();
+		const right = questionById.get('1')!.options[key('1')];
+		await wrapper.find('.forward').trigger('click');
+		await wrapper.find('.previous').trigger('click');
+		expect(texts()).toEqual(before);
+		await wrapper.findAll('.option')[before.indexOf(right)].trigger('click');
+		await wrapper.find('.submit').trigger('click');
+		await wrapper.find('.confirm-yes').trigger('click');
+		await settle();
+		setShuffleAnswers(false);
+		expect(calls.find((call) => call.path === '/api/exams/5/finish')?.body.answers).toContainEqual({questionId: '1', chosen: key('1')});
 	});
 
 	it('shows the first question with a full clock and counts down every second', async () => {

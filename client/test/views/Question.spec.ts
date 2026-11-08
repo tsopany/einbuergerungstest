@@ -3,6 +3,7 @@ import {createMemoryHistory, createRouter} from 'vue-router';
 
 import {fail, serverAnswer, signedIn, stubApi} from '../_helpers/api';
 import i18n from '@/lib/i18n';
+import {setShuffleAnswers} from '@/lib/order';
 import {questionById} from '@/lib/questions';
 import {useProgressStore} from '@/stores/progress';
 import Question from '@/views/Question.vue';
@@ -86,6 +87,30 @@ describe('Question', () => {
 		expect(wrapper.find('.verdict').classes()).toContain('wrong');
 		expect(wrapper.findAll('.option')[wrongIndex].classes()).toContain('wrong');
 		expect(wrapper.findAll('.option')[key('1')].classes()).toContain('right');
+	});
+
+	it('sends the original option index when the answers are shuffled', async () => {
+		setShuffleAnswers(true);
+		const {wrapper, calls} = await mountQuestion('/p/frage/1', '1', {'POST /api/answers': {correct: true, correctIndex: key('1')}});
+		const right = questionById.get('1')!.options[key('1')];
+		const shown = wrapper.findAll('.option');
+		const position = shown.findIndex((option) => option.text() === right);
+		await shown[position].trigger('click');
+		await flushPromises();
+		setShuffleAnswers(false);
+		expect(calls.at(-1)).toMatchObject({method: 'POST', body: {questionId: '1', chosen: key('1')}});
+		expect(wrapper.find('.verdict').text()).toBe('Richtig!');
+		expect(wrapper.findAll('.option')[position].classes()).toContain('right');
+	});
+
+	it('keeps the easy mode for the next question and sends it as the source', async () => {
+		const {wrapper, calls, router} = await mountQuestion('/p/frage/1?mode=easy', '1', {'POST /api/answers': {correct: true, correctIndex: key('1')}});
+		await wrapper.findAll('.option')[key('1')].trigger('click');
+		await flushPromises();
+		expect(calls.at(-1)?.body.source).toBe('easy');
+		await wrapper.find('.next').trigger('click');
+		await flushPromises();
+		expect(router.currentRoute.value.query).toEqual({mode: 'easy'});
 	});
 
 	it('answers only once', async () => {

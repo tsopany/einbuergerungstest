@@ -6,6 +6,11 @@
 			<p v-if="auth.user" class="muted account">{{ t('settings.account', {email: auth.user.email}) }}</p>
 			<p v-if="done" class="done" role="status">{{ t('settings.resetDone') }}</p>
 			<p v-if="failed" class="err" role="alert">{{ t('settings.failed') }}</p>
+			<label class="shuffle">
+				<input type="checkbox" :checked="shuffleAnswers" @change="setShuffleAnswers(($event.target as HTMLInputElement).checked)" />
+				<span>{{ t('settings.shuffle') }}</span>
+				<span class="muted">{{ t('settings.shuffleHint') }}</span>
+			</label>
 			<section v-for="action in actions" :key="action.name" class="action" :class="action.name">
 				<button v-if="asking !== action.name" class="ghost danger ask" type="button" @click="ask(action.name)">{{ t(`settings.${action.name}`) }}</button>
 				<div v-else class="confirm" role="alertdialog">
@@ -26,6 +31,7 @@
 	import {useRouter} from 'vue-router';
 
 	import AppHeader from '@/components/AppHeader.vue';
+	import {setShuffleAnswers, shuffleAnswers} from '@/lib/order';
 	import {useAuthStore} from '@/stores/auth';
 	import {useProgressStore} from '@/stores/progress';
 

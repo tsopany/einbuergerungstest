@@ -12,6 +12,7 @@
 				<p class="phase mono">{{ summary.phase === 'coverage' ? t('home.phaseCoverage', {seen: summary.seen, total}) : t('home.phaseWeighted') }}</p>
 				<div class="row actions">
 					<router-link class="primary practice" to="/p/frage">{{ t('home.practice') }}</router-link>
+					<router-link class="ghost easy" :to="{path: '/p/frage', query: {mode: 'easy'}}">{{ t('home.practiceEasy') }}</router-link>
 					<router-link class="ghost weak" :to="{path: '/p/frage', query: {mode: 'weak'}}">{{ t('home.practiceWeak') }}</router-link>
 					<router-link class="ghost exam" to="/p/pruefung">{{ t('home.exam') }}</router-link>
 				</div>

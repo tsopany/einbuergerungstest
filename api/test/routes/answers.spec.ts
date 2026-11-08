@@ -37,10 +37,12 @@ describe("answer routes", () => {
 			source: "weak",
 		});
 		expect(wrong.json()).toMatchObject({ correct: false });
+		expect((await post({ questionId: "1", chosen: key, source: "easy" })).statusCode).toBe(201);
 		const list = await app.inject({ url: "/api/answers", headers: bearer(app, userId) });
 		expect(list.json()).toMatchObject([
 			{ questionId: "1", chosen: key, correct: true, source: "practice", examId: null },
 			{ questionId: "NW-1", correct: false, source: "weak" },
+			{ questionId: "1", correct: true, source: "easy" },
 		]);
 	});
 

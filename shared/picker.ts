@@ -8,12 +8,14 @@ export const REVIEW_DELAY_MS = 2 * HOUR_MS;
 export const COOLDOWN_MS = 24 * HOUR_MS;
 export const COOLDOWN_FACTOR = 0.1;
 export const RECENT_COUNT = 10;
+/** Lowest Leitner box that counts as known well for `easy` mode. */
+export const EASY_MIN_BOX = 3;
 /** Weight by Leitner box; an unseen question weighs like box 0. */
 export const BOX_WEIGHTS = [16, 8, 4, 2, 0.5] as const;
 
 export type Phase = "coverage" | "weighted";
-/** `practice` follows the phases; `weak` always uses the weighted rules. */
-export type Mode = "practice" | "weak";
+/** `practice` follows the phases; `weak` always uses the weighted rules; `easy` serves questions already known well. */
+export type Mode = "practice" | "weak" | "easy";
 
 export type PickInput = {
 	ids: readonly string[];
@@ -55,7 +57,12 @@ export const recentIds = (answers: readonly Answer[]): Set<string> =>
 
 export function pickNext({ ids, answers, seed, now, rng, mode = "practice" }: PickInput): string {
 	const states = deriveStates(answers);
-	if (mode === "practice" && phaseOf(ids, states) === "coverage") return pickCoverage(ids, states, seed, now, rng);
+	if (mode === "easy") {
+		const recent = recentIds(answers);
+		const known = ids.filter((id) => (states.get(id)?.box ?? 0) >= EASY_MIN_BOX && !recent.has(id));
+		if (known.length) return known[Math.floor(rng() * known.length)];
+	}
+	if (mode !== "weak" && phaseOf(ids, states) === "coverage") return pickCoverage(ids, states, seed, now, rng);
 	return pickWeighted(ids, states, answers, now, rng);
 }
 

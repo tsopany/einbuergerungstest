@@ -3,7 +3,7 @@ import { Answers } from "@/db/entities";
 import { NotFoundError } from "@/errors";
 import { questionById } from "@/services/questions";
 
-export type AnswerSource = "practice" | "weak";
+export type AnswerSource = "practice" | "weak" | "easy";
 
 export type NewAnswer = { questionId: string; chosen: number; source: AnswerSource };
 

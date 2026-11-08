@@ -106,6 +106,16 @@ a:focus-visible {
 	gap: 8px 16px;
 	font-size: 12px;
 }
+.shuffle {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 2px 8px;
+	margin: 16px 0;
+	cursor: pointer;
+}
+.shuffle .muted {
+	grid-column: 2;
+}
 .who-bar {
 	display: flex;
 	flex-wrap: wrap;
