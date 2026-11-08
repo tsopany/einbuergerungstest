@@ -2,10 +2,14 @@ import { UniqueConstraintViolationException } from "@mikro-orm/core";
 import type { EntityManager } from "@mikro-orm/postgresql";
 import { Identities, Users } from "@/db/entities";
 
-export const toProfile = (user: { id: string; email: string }) => ({ id: user.id, email: user.email });
+export const toProfile = (user: { id: string; email: string; name?: string | null }) => ({
+	id: user.id,
+	email: user.email,
+	name: user.name ?? null,
+});
 
 export type Provider = "google";
-export type Profile = { provider: Provider; externalId: string; email: string };
+export type Profile = { provider: Provider; externalId: string; email: string; name?: string };
 
 export async function signIn(em: EntityManager, profile: Profile): Promise<Users> {
 	try {
@@ -18,14 +22,17 @@ export async function signIn(em: EntityManager, profile: Profile): Promise<Users
 
 function signInOnce(em: EntityManager, profile: Profile): Promise<Users> {
 	const email = profile.email.trim().toLowerCase();
+	const name = profile.name?.trim() || null;
 	return em.transactional(async (tx) => {
 		const identity = await tx.findOne(Identities, { provider: profile.provider, external_id: profile.externalId });
 		if (identity) {
 			await tx.nativeUpdate(Identities, { id: identity.id }, { email });
-			return tx.findOneOrFail(Users, { id: identity.user_id });
+			if (name) await tx.nativeUpdate(Users, { id: identity.user_id }, { name });
+			return tx.findOneOrFail(Users, { id: identity.user_id }, { refresh: true });
 		}
 		const existing = await tx.findOne(Users, { email }, { orderBy: { created_at: "asc" } });
 		const userId = existing?.id ?? (await tx.insert(Users, { email }));
+		if (name) await tx.nativeUpdate(Users, { id: userId }, { name });
 		await tx.insert(Identities, {
 			user_id: userId,
 			provider: profile.provider,

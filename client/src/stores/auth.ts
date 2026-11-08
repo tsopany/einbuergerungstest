@@ -6,6 +6,7 @@ import {api, ApiError} from '@/lib/api';
 export interface Me {
 	id: string;
 	email: string;
+	name?: string | null;
 }
 
 export const useAuthStore = defineStore('auth', () => {

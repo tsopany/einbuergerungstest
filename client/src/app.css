@@ -106,6 +106,24 @@ a:focus-visible {
 	gap: 8px 16px;
 	font-size: 12px;
 }
+.who-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 4px 14px;
+}
+.who {
+	font-size: 12px;
+	color: var(--ink2);
+}
+.theme {
+	display: inline-flex;
+	align-self: center;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
 .brand {
 	font-weight: 600;
 	font-size: 13px;

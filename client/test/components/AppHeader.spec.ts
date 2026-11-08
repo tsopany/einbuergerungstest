@@ -4,6 +4,7 @@ import {createMemoryHistory, createRouter} from 'vue-router';
 
 import AppHeader from '@/components/AppHeader.vue';
 import i18n from '@/lib/i18n';
+import {theme} from '@/lib/theme';
 import {useAuthStore} from '@/stores/auth';
 
 config.global.plugins = [];
@@ -32,9 +33,22 @@ describe('AppHeader', () => {
 		await wrapper.vm.$nextTick();
 		expect(wrapper.find('.signin').exists()).toBe(false);
 		expect(wrapper.find('.settings').exists()).toBe(true);
+		expect(wrapper.find('.who').text()).toBe('me@example.com');
+		auth.user = {id: 'u1', email: 'me@example.com', name: 'Ada'};
+		await wrapper.vm.$nextTick();
+		expect(wrapper.find('.who').text()).toBe('Ada');
 		await wrapper.find('.signout').trigger('click');
 		await flushPromises();
 		expect(auth.user).toBeNull();
 		expect(router.currentRoute.value.fullPath).toBe('/p/login');
+	});
+
+	it('toggles the theme with the last control in the bar', async () => {
+		theme.value = 'light';
+		const {wrapper} = mountHeader();
+		const buttons = wrapper.findAll('nav > *');
+		expect(buttons[buttons.length - 1].classes()).toContain('theme');
+		await wrapper.find('.theme').trigger('click');
+		expect(theme.value).toBe('dark');
 	});
 });

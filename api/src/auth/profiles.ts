@@ -14,11 +14,11 @@ async function getJson<T>(fetcher: Fetch, url: string, accessToken: string): Pro
 }
 
 export async function googleProfile(accessToken: string, fetcher: Fetch = fetch): Promise<Profile | null> {
-	const user = await getJson<{ id?: string; email?: string; verified_email?: boolean }>(
+	const user = await getJson<{ id?: string; email?: string; verified_email?: boolean; name?: string }>(
 		fetcher,
 		GOOGLE_USERINFO,
 		accessToken,
 	);
 	if (!user?.id || !user.email || user.verified_email !== true) return null;
-	return { provider: "google", externalId: String(user.id), email: user.email };
+	return { provider: "google", externalId: String(user.id), email: user.email, name: user.name };
 }

@@ -6,6 +6,7 @@ export const Users = defineEntity({
 	properties: (p) => ({
 		id: p.uuid().primary().defaultRaw("gen_random_uuid()"),
 		email: p.text(),
+		name: p.text().nullable(),
 		created_at: p.datetime().columnType("timestamptz").defaultRaw("now()"),
 		updated_at: p.datetime().columnType("timestamptz").defaultRaw("now()"),
 	}),

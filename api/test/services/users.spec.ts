@@ -34,11 +34,31 @@ describe("users service", () => {
 		expect(await getEm().count(Identities, { user_id: first.id })).toBe(2);
 	});
 
+	it("stores the name and refreshes it on the next sign-in", async () => {
+		const first = await signIn(getEm(), {
+			provider: "google",
+			externalId: "g-n",
+			email: "n@example.com",
+			name: " Ada ",
+		});
+		expect(first.name).toBe("Ada");
+		const again = await signIn(getEm(), {
+			provider: "google",
+			externalId: "g-n",
+			email: "n@example.com",
+			name: "Ada L.",
+		});
+		expect(again.name).toBe("Ada L.");
+		const kept = await signIn(getEm(), { provider: "google", externalId: "g-n", email: "n@example.com" });
+		expect(kept.name).toBe("Ada L.");
+		expect(toProfile(kept)).toEqual({ id: kept.id, email: "n@example.com", name: "Ada L." });
+	});
+
 	it("finds users by id and shapes the profile", async () => {
 		const user = await signIn(getEm(), { provider: "google", externalId: "g-5", email: "find@example.com" });
 		expect(await findUser(getEm(), user.id)).toMatchObject({ id: user.id });
 		expect(await findUser(getEm(), "00000000-0000-0000-0000-000000000000")).toBeNull();
-		expect(toProfile(user)).toEqual({ id: user.id, email: "find@example.com" });
+		expect(toProfile(user)).toEqual({ id: user.id, email: "find@example.com", name: null });
 	});
 
 	it("retries once when two sign-ins of the same person race on the unique identity", async () => {

@@ -8,12 +8,16 @@ describe("googleProfile", () => {
 		const seen: unknown[] = [];
 		const fetcher = (async (url: string, init: RequestInit) => {
 			seen.push(url, init.headers);
-			return { ok: true, json: async () => ({ id: 42, email: "me@example.com", verified_email: true }) };
+			return {
+				ok: true,
+				json: async () => ({ id: 42, email: "me@example.com", verified_email: true, name: "Me Example" }),
+			};
 		}) as unknown as typeof fetch;
 		expect(await googleProfile("token", fetcher)).toEqual({
 			provider: "google",
 			externalId: "42",
 			email: "me@example.com",
+			name: "Me Example",
 		});
 		expect(seen).toEqual(["https://www.googleapis.com/oauth2/v2/userinfo", { Authorization: "Bearer token" }]);
 	});

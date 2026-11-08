@@ -21,7 +21,7 @@ describe("me route", () => {
 
 	it("returns the signed-in profile", async () => {
 		const res = await app.inject({ url: "/api/me", headers: bearer(app, userId) });
-		expect(res.json()).toEqual({ id: userId, email: "me@example.com" });
+		expect(res.json()).toEqual({ id: userId, email: "me@example.com", name: null });
 	});
 
 	it("answers 404 for a token whose user is gone", async () => {

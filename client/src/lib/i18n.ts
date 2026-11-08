@@ -2,7 +2,7 @@ import {createI18n} from 'vue-i18n';
 
 const de = {
 	app: {name: 'Einbürgerungstest', requestFailed: 'Anfrage fehlgeschlagen'},
-	nav: {label: 'Navigation', legal: 'Rechtliches', settings: 'Einstellungen', signIn: 'Anmelden', signOut: 'Abmelden'},
+	nav: {label: 'Navigation', legal: 'Rechtliches', settings: 'Einstellungen', signIn: 'Anmelden', signOut: 'Abmelden', theme: 'Design wechseln'},
 	loading: 'Lädt …',
 	retry: 'Erneut versuchen',
 	home: {
