@@ -19,7 +19,7 @@ The app runs against the **shared** podman postgres every tsopany app uses on th
 ```bash
 pnpm i && pnpm -C shared i && pnpm -C api i && pnpm -C client i
 pnpm -C api serve                   # http://localhost:8115/api/health (migrations apply on start)
-pnpm -C client serve                # http://localhost:3051
+pnpm -C client serve                # http://localhost:3051 (Vite runs through `infisical run`, so `infisical login` is needed)
 ```
 
 ## Database dump & restore

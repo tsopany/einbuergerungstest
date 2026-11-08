@@ -8,6 +8,6 @@ The build plan is in `PLAN.md`. Stack: `api/` (Fastify + TypeScript + MikroORM +
 pnpm i && pnpm -C shared i && pnpm -C api i && pnpm -C client i
 pnpm secrets           # renders api/.env from Infisical `dev`, see .deployment/localhost/README.md
 pnpm -C api serve      # http://localhost:8115/api/health
-pnpm -C client serve   # http://localhost:3051
+pnpm -C client serve   # http://localhost:3051 (runs Vite through `infisical run`, needs `infisical login`)
 pnpm check             # format, lint, typecheck, build, test for shared, api and client
 ```

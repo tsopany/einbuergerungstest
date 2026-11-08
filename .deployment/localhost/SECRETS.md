@@ -26,3 +26,10 @@ Consumed by `api.env.template`. Register the dev Google OAuth client with the re
 authorized origin `http://localhost:3051`.
 
 - `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` - Google OAuth client (dev)
+
+## Client
+
+Not rendered into a file: `pnpm -C client serve` runs Vite through `infisical run --env=dev --recursive --`, so Infisical `dev` supplies the variables to the process.
+`VITE_*` values end up in the shipped bundle - never put a real secret behind a `VITE_` name.
+
+- `VITE_API_BASE_URL` - api origin for the dev client: `http://localhost:8115` (not a secret; production builds take it from the GitHub variable of the same name)

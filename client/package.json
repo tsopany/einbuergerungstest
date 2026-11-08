@@ -11,7 +11,7 @@
 	"author": "Tsopany",
 	"license": "MIT",
 	"scripts": {
-		"serve": "vite serve --port 3051 --open",
+		"serve": "infisical run --env=dev --recursive -- vite serve --port 3051 --open",
 		"build": "vue-tsc && vite build",
 		"typecheck": "vue-tsc --noEmit",
 		"quick": "vitest run",

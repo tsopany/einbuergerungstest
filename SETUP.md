@@ -19,6 +19,7 @@ Google Cloud Console > APIs & Services > Credentials. The consent screen must be
 ## 3. Infisical (`https://secrets.tsopany.com`)
 
 - [ ] Create project `einbuergerungstest` with environments `dev` and `prd`.
+- [ ] Add to `dev` only: `VITE_API_BASE_URL` = `http://localhost:8115` (the dev client reads it through `infisical run`; production builds use the GitHub variable).
 - [ ] Add to **both** envs (values differ): `DB_USER` = `einbuergerungstest`, `DB_DATABASE` = `einbuergerungstest`, `DB_PASSWORD` (URL-safe: `openssl rand -base64 24 | tr -d '/+='`),
   `JWT_SECRET` (`openssl rand -base64 48`), `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` (dev client in `dev`, prod client in `prd`).
 - [ ] Give the deploy Machine Identity read access to the project (Access Control > Machine Identities) for env `prd`.
@@ -29,7 +30,7 @@ Google Cloud Console > APIs & Services > Credentials. The consent screen must be
 
 - [ ] `pnpm i && pnpm -C shared i && pnpm -C api i && pnpm -C client i`
 - [ ] `pnpm secrets` (renders `api/.env` and the podman command files from `dev`), then follow `.deployment/localhost/README.md` for the shared postgres and the database.
-- [ ] `cp client/.env.example client/.env` (`VITE_API_BASE_URL=http://localhost:8115`).
+- [ ] `infisical login` (the client's `serve` script runs Vite through `infisical run`, no `.env` file needed).
 - [ ] `pnpm -C api serve` and `pnpm -C client serve`; sign in with Google at `http://localhost:3051`, answer a question, run a mock exam.
 
 ## 5. DNS

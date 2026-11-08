@@ -288,7 +288,7 @@ Account deletion (board has `deleteAccount`) stays: it is the user's data.
   `check-main-client.yml` (build SPA, `scp` `client/dist/*` to `/var/deploy/einbuergerungstest/client`);
   `check-main-analyze.yml` (tests with coverage + Sonar).
 - Secrets in Infisical project `einbuergerungstest` (`dev`, `prd`): `DB_USER`, `DB_PASSWORD`, `DB_DATABASE` (`einbuergerungstest` / generated), `JWT_SECRET`, `AUTH_GOOGLE_CLIENT_ID`,
-  `AUTH_GOOGLE_CLIENT_SECRET`. The URLs, `TRUSTED_HOSTS` and `TRUSTED_PROXIES` are fixed in the templates, not secrets.
+  `AUTH_GOOGLE_CLIENT_SECRET`, plus `VITE_API_BASE_URL` in `dev` only (the client's `serve` runs through `infisical run`). The URLs, `TRUSTED_HOSTS` and `TRUSTED_PROXIES` are fixed in the templates, not secrets.
 - Google Cloud Console: OAuth client for prod (origin `https://test.tsopany.com`, redirect = `GOOGLE_CALLBACK_URL` byte-exact) and one for dev.
 
 ### In `tsopany-vm-setup`

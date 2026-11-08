@@ -4,13 +4,30 @@
 		{
 			"name": "client",
 			"runtimeExecutable": "pnpm",
-			"runtimeArgs": ["--dir", "client", "exec", "vite", "serve", "--port", "3051"],
+			"runtimeArgs": [
+				"--dir",
+				"client",
+				"exec",
+				"infisical",
+				"run",
+				"--env=dev",
+				"--recursive",
+				"--",
+				"vite",
+				"serve",
+				"--port",
+				"3051"
+			],
 			"port": 3051
 		},
 		{
 			"name": "api",
 			"runtimeExecutable": "pnpm",
-			"runtimeArgs": ["--dir", "api", "serve"],
+			"runtimeArgs": [
+				"--dir",
+				"api",
+				"serve"
+			],
 			"port": 8115
 		}
 	]
