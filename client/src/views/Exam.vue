@@ -66,7 +66,9 @@
 					<ul class="list wrong-list">
 						<li v-for="item in result.wrong" :key="item.questionId">
 							<div>
-								<strong>{{ item.questionId }} · {{ questionById.get(item.questionId)?.text }}</strong>
+								<router-link class="question-link" :to="`/p/frage/${item.questionId}`"
+									><strong>{{ item.questionId }} · {{ questionById.get(item.questionId)?.text }}</strong></router-link
+								>
 								<p class="muted">{{ t('exam.yourAnswer') }}: {{ given(item.questionId) }}</p>
 								<p class="right-answer">{{ t('exam.correctAnswer') }}: {{ questionById.get(item.questionId)?.options[item.correctIndex] }}</p>
 							</div>

@@ -14,7 +14,9 @@
 				<ul class="list report-list">
 					<li v-for="(item, index) in report.questions" :key="item.questionId" class="report-item" :class="statusOf(item)">
 						<div>
-							<strong>{{ index + 1 }}. {{ item.questionId }} · {{ questionById.get(item.questionId)?.text }}</strong>
+							<router-link class="question-link" :to="`/p/frage/${item.questionId}`"
+								><strong>{{ index + 1 }}. {{ item.questionId }} · {{ questionById.get(item.questionId)?.text }}</strong></router-link
+							>
 							<p class="muted given">{{ t('exam.yourAnswer') }}: {{ optionText(item.questionId, item.chosen) }}</p>
 							<p v-if="statusOf(item) !== 'right'" class="right-answer">{{ t('exam.correctAnswer') }}: {{ optionText(item.questionId, item.correctIndex) }}</p>
 						</div>

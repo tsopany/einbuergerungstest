@@ -213,6 +213,7 @@ describe('Exam', () => {
 		const item = wrapper.find('.wrong-list li');
 		expect(item.text()).toContain('Deine Antwort: keine Antwort');
 		expect(item.text()).toContain(`Richtig: ${questionById.get('55')!.options[key('55')]}`);
+		expect(item.findComponent(RouterLinkStub).props('to')).toBe('/p/frage/55');
 		expect(wrapper.find('.timeup').exists()).toBe(false);
 		expect(wrapper.find('.timer').exists()).toBe(false);
 	});

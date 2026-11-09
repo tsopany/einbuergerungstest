@@ -37,6 +37,11 @@ describe('ExamReport', () => {
 		expect(wrapper.find('.score').text()).toContain('1');
 		const items = wrapper.findAll('.report-item');
 		expect(items).toHaveLength(3);
+		const targets = wrapper
+			.findAllComponents(RouterLinkStub)
+			.filter((link) => link.classes('question-link'))
+			.map((link) => link.props('to'));
+		expect(targets).toEqual(['/p/frage/1', '/p/frage/2', '/p/frage/3']);
 		expect(items[0].classes()).toContain('right');
 		expect(items[0].find('.right-answer').exists()).toBe(false);
 		expect(items[1].classes()).toContain('wrong');
